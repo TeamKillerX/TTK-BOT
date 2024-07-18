@@ -1,7 +1,11 @@
+import logging
 from pyrogram import Client, filters
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 from RyuzakiLib import Tiktok
 from config import TIKTOK_WEB as tt, API_ID, API_HASH, BOT_TOKEN
+
+logging.getLogger("pyrogram").setLevel(logging.WARNING)
+logging.basicConfig(level=logging.INFO)
 
 WELCOME_TEXT = """
 Halo {}
