@@ -1,0 +1,4 @@
+requests
+pyrogram
+TgCrypto
+git+https://github.com/TeamKillerX/RyuzakiLib
