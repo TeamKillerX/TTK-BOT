@@ -49,19 +49,19 @@ async def callback_button(client: Client, cb: CallbackQuery):
 
 @client.on_message(filters.text & filters.private)
 async def tiktok_downloader(client: Client, message: Message):
-    keyboard = InlineKeyboardMarkup(
-        [
-            [
-                InlineKeyboardButton(
-                    text="Audio Download",
-                    callback_data=f"audiodownload_{user_id}|{link}"
-                )
-            ]
-        ]
-    )
     if message.text:
+        query = message.text
+        keyboard = InlineKeyboardMarkup(
+            [
+                [
+                    InlineKeyboardButton(
+                        text="Audio Download",
+                        callback_data=f"audiodownload_{message.from_user.id}|{query}"
+                    )
+                ]
+            ]
+        )
         try:
-            query = message.text
             dll = await message.reply_text("Processing....")
             await message.delete()
             response = Tiktok.download(tt, query)
