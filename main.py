@@ -40,12 +40,15 @@ async def welcome_start(client: Client, message: Message):
 
 @client.on_callback_query(filters.regex("^audiodownload_"))
 async def callback_button(client: Client, cb: CallbackQuery):
-    data = cb.data.split("_")
-    data_test = cb.data.split("|")[1]
-    user_id = int(data[1])
-    link = str(data_test[1])
-    response = Tiktok.download(tt, link)
-    await client.send_audio(user_id, response[1])
+    try:
+        data = cb.data.split("_")
+        user_id = int(data[1].split("|")[0])
+        link = cb.data.split("|")[1]
+        response = Tiktok.download(tt, link)
+        await client.send_audio(user_id, response[1])
+        await cb.answer("Audio sent successfully!")
+    except Exception as e:
+        await cb.answer(f"Error: {str(e)}", show_alert=True)
 
 @client.on_message(filters.text & filters.private)
 async def tiktok_downloader(client: Client, message: Message):
@@ -68,7 +71,8 @@ async def tiktok_downloader(client: Client, message: Message):
             await message.reply_video(response[0], reply_markup=keyboard)
             await dll.delete()
         except Exception as e:
-            await message.reply_text(f"Error: {str(e)}")
             await dll.delete()
+            await message.reply_text(f"Error: {str(e)}")
 
 client.run()
+
