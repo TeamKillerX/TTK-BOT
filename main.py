@@ -38,16 +38,37 @@ async def welcome_start(client: Client, message: Message):
         reply_markup=keyboard
     )
 
+@client.on_callback_query(filters.regex("^audiodownload_"))
+async def callback_button(client: Client, cb: CallbackQuery):
+    data = cb.data.split("_")
+    data_test = cb.data.split("|")[1]
+    user_id = int(data[1])
+    link = str(data_test[1])
+    response = Tiktok.download(tt, link)
+    await client.send_audio(user_id, response[1])
+
 @client.on_message(filters.text & filters.private)
 async def tiktok_downloader(client: Client, message: Message):
+    keyboard = InlineKeyboardMarkup(
+        [
+            [
+                InlineKeyboardButton(
+                    text="Audio Download",
+                    callback_data=f"audiodownload_{user_id}|{link}"
+                )
+            ]
+        ]
+    )
     if message.text:
         try:
             query = message.text
             dll = await message.reply_text("Processing....")
-            response = Tiktok(tt, query)
-            await message.reply_video(response[0])
+            await message.delete()
+            response = Tiktok.download(tt, query)
+            await message.reply_video(response[0], reply_markup=keyboard)
             await dll.delete()
         except Exception as e:
             await message.reply_text(f"Error: {str(e)}")
+            await dll.delete()
 
 client.run()
