@@ -1,8 +1,10 @@
 import logging
 from pyrogram import Client, filters
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
+from pyrogram.types import *
 from RyuzakiLib import Tiktok
 from config import TIKTOK_WEB as tt, API_ID, API_HASH, BOT_TOKEN
+import hashlib
 
 logging.getLogger("pyrogram").setLevel(logging.WARNING)
 logging.basicConfig(level=logging.INFO)
@@ -20,6 +22,14 @@ client = Client(
     api_hash=API_HASH,
     bot_token=BOT_TOKEN
 )
+
+link_storage = {}
+
+def generate_callback_data(user_id, query):
+    identifier = hashlib.md5(query.encode()).hexdigest()
+    callback_data = f"audiodownload_{user_id}_{identifier}"
+    link_storage[callback_data] = query
+    return callback_data
 
 @client.on_message(filters.command("start") & filters.private)
 async def welcome_start(client: Client, message: Message):
@@ -41,12 +51,15 @@ async def welcome_start(client: Client, message: Message):
 @client.on_callback_query(filters.regex("^audiodownload_"))
 async def callback_button(client: Client, cb: CallbackQuery):
     try:
-        data = cb.data.split("_")
-        user_id = int(data[1].split("|")[0])
-        link = cb.data.split("|")[1]
-        response = Tiktok.download(tt, link)
-        await client.send_audio(user_id, response[1])
-        await cb.answer("Audio sent successfully!")
+        data = cb.data
+        user_id = cb.from_user.id
+        query = link_storage.get(data)
+        if query:
+            response = Tiktok.download(tt, query)
+            await client.send_audio(user_id, response[1])
+            await cb.answer("Audio sent successfully!")
+        else:
+            await cb.answer("Invalid or expired link.", show_alert=True)
     except Exception as e:
         await cb.answer(f"Error: {str(e)}", show_alert=True)
 
@@ -54,12 +67,13 @@ async def callback_button(client: Client, cb: CallbackQuery):
 async def tiktok_downloader(client: Client, message: Message):
     if message.text:
         query = message.text
+        callback_data = generate_callback_data(message.from_user.id, query)
         keyboard = InlineKeyboardMarkup(
             [
                 [
                     InlineKeyboardButton(
                         text="Audio Download",
-                        callback_data=f"audiodownload_{message.from_user.id}|{query}"
+                        callback_data=callback_data
                     )
                 ]
             ]
@@ -75,4 +89,3 @@ async def tiktok_downloader(client: Client, message: Message):
             await message.reply_text(f"Error: {str(e)}")
 
 client.run()
-
