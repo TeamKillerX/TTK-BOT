@@ -17,13 +17,13 @@ logging.basicConfig(level=logging.INFO)
 
 WELCOME_TEXT = """
 Halo {}
-Saya adalah bot untuk mengunduh video tiktok di telegram.
+Saya adalah bot untuk mengunduh video dll di telegram.
 
 Saya dapat mengunduh video dengan tanda air atau tanpa tanda air dan mengunduh audio dari url. Kirimkan saja saya url tiktok.
 """
 
 client = Client(
-    "TTK-BOT",
+    "allsavebot",
     api_id=API_ID,
     api_hash=API_HASH,
     bot_token=BOT_TOKEN
