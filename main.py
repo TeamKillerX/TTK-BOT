@@ -66,14 +66,15 @@ async def callback_button(client: Client, cb: CallbackQuery):
 @client.on_message(filters.text & filters.private)
 async def all_downloader(client: Client, message: Message):
     if message.text:
-        query = message.text
+        query = message.text.strip()
         if not (
             query.startswith("https://vt.tiktok.com/")
-            and not query.startswith("https://www.tiktok.com/")
-            or not query.startswith("https://youtu.be/")
+            or query.startswith("https://www.tiktok.com/")
+            or query.startswith("https://youtu.be/")
         ):
             return await message.reply_text("Invalid link")
-        if query.startswith("https://vt.tiktok.com/") and query.startswith("https://www.tiktok.com/"):
+
+        if query.startswith("https://vt.tiktok.com/") or query.startswith("https://www.tiktok.com/"):
             callback_data = generate_callback_data(message.from_user.id, query)
             keyboard = InlineKeyboardMarkup(
                 [
@@ -95,8 +96,16 @@ async def all_downloader(client: Client, message: Message):
                 await dll.delete()
                 await message.reply_text(f"Error: {str(e)}")
         elif query.startswith("https://youtu.be/"):
-            pass
-        elif query.startswith(""):
-            pass
+            try:
+                dll = await message.reply_text("Processing YouTube link....")
+                await message.delete()
+                await dll.delete()
+                await message.reply_text("YouTube download is not yet implemented.")
+            except Exception as e:
+                await dll.delete()
+                await message.reply_text(f"Error: {str(e)}")
+        else:
+            await message.reply_text("Link format not recognized.")
+
 
 client.run()
