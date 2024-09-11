@@ -27,6 +27,10 @@ client = Client(
 
 link_storage = {}
 
+def secs_to_mins(secs: int) -> str:
+    mins, secs = divmod(secs, 60)
+    return f"{mins}:{secs}"
+
 def generate_callback_data(user_id, query):
     identifier = hashlib.md5(query.encode()).hexdigest()
     callback_data = f"audiodownload_{user_id}_{identifier}"
