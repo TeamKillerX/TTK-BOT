@@ -55,7 +55,7 @@ async def callback_button(client: Client, cb: CallbackQuery):
         user_id = cb.from_user.id
         query = link_storage.get(data)
         if query:
-            response = Tiktok.download(tt, query)
+            response = await Tiktok.download(tt, query)
             await client.send_audio(user_id, response[1])
             await cb.answer("Audio sent successfully!")
         else:
@@ -64,28 +64,39 @@ async def callback_button(client: Client, cb: CallbackQuery):
         await cb.answer(f"Error: {str(e)}", show_alert=True)
 
 @client.on_message(filters.text & filters.private)
-async def tiktok_downloader(client: Client, message: Message):
+async def all_downloader(client: Client, message: Message):
     if message.text:
         query = message.text
-        callback_data = generate_callback_data(message.from_user.id, query)
-        keyboard = InlineKeyboardMarkup(
-            [
+        if not (
+            query.startswith("https://vt.tiktok.com/")
+            and not query.startswith("https://www.tiktok.com/")
+            or not query.startswith("https://youtu.be/")
+        ):
+            return await message.reply_text("Invalid link")
+        if query.startswith("https://vt.tiktok.com/") and query.startswith("https://www.tiktok.com/"):
+            callback_data = generate_callback_data(message.from_user.id, query)
+            keyboard = InlineKeyboardMarkup(
                 [
-                    InlineKeyboardButton(
-                        text="Audio Download",
-                        callback_data=callback_data
-                    )
+                    [
+                        InlineKeyboardButton(
+                            text="Audio Download",
+                            callback_data=callback_data
+                        )
+                    ]
                 ]
-            ]
-        )
-        try:
-            dll = await message.reply_text("Processing....")
-            await message.delete()
-            response = Tiktok.download(tt, query)
-            await message.reply_video(response[0], reply_markup=keyboard)
-            await dll.delete()
-        except Exception as e:
-            await dll.delete()
-            await message.reply_text(f"Error: {str(e)}")
+            )
+            try:
+                dll = await message.reply_text("Processing....")
+                await message.delete()
+                response = await Tiktok.download(tt, query)
+                await message.reply_video(response[0], reply_markup=keyboard)
+                await dll.delete()
+            except Exception as e:
+                await dll.delete()
+                await message.reply_text(f"Error: {str(e)}")
+        elif query.startswith("https://youtu.be/"):
+            pass
+        elif query.startswith(""):
+            pass
 
 client.run()
