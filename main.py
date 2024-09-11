@@ -2,11 +2,14 @@ import logging
 import time
 import os
 import hashlib
+import requests
 from config import TIKTOK_WEB as tt, API_ID, API_HASH, BOT_TOKEN
 from pyrogram import Client, filters
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 from pyrogram.types import *
 from RyuzakiLib import Tiktok
+from driver import YoutubeDriver
+from yt_dlp import YoutubeDL
 from scripts import progress
 
 logging.getLogger("pyrogram").setLevel(logging.WARNING)
@@ -139,6 +142,5 @@ async def all_downloader(client: Client, message: Message):
                 pass
         else:
             await message.reply_text("Link format not recognized.")
-
 
 client.run()
