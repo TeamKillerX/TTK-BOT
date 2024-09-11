@@ -1,12 +1,13 @@
 import logging
 import time
 import os
+import hashlib
+from config import TIKTOK_WEB as tt, API_ID, API_HASH, BOT_TOKEN
 from pyrogram import Client, filters
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 from pyrogram.types import *
 from RyuzakiLib import Tiktok
-from config import TIKTOK_WEB as tt, API_ID, API_HASH, BOT_TOKEN
-import hashlib
+from scripts import progress
 
 logging.getLogger("pyrogram").setLevel(logging.WARNING)
 logging.basicConfig(level=logging.INFO)
