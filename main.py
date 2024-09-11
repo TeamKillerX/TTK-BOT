@@ -1,4 +1,6 @@
 import logging
+import time
+import os
 from pyrogram import Client, filters
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 from pyrogram.types import *
@@ -96,14 +98,40 @@ async def all_downloader(client: Client, message: Message):
                 await dll.delete()
                 await message.reply_text(f"Error: {str(e)}")
         elif query.startswith("https://youtu.be/"):
+            pro = await message.reply_text("Checking ...")
+            status, url = YoutubeDriver.check_url(query)
+            if not status:
+                return await pro.edit_text(url)
+            await pro.edit_text("🎼 __Downloading video ...__")
             try:
-                dll = await message.reply_text("Processing YouTube link....")
-                await message.delete()
-                await dll.delete()
-                await message.reply_text("YouTube download is not yet implemented.")
+                with YoutubeDL(YoutubeDriver.video_options()) as ytdl:
+                    yt_data = ytdl.extract_info(url, True)
+                    yt_file = yt_data["id"]
+                upload_text = f"**⬆️ 𝖴𝗉𝗅𝗈𝖺𝖽𝗂𝗇𝗀 𝖲𝗈𝗇𝗀 ...** \n\n**𝖳𝗂𝗍𝗅𝖾:** `{yt_data['title'][:50]}`\n**𝖢𝗁𝖺𝗇𝗇𝖾𝗅:** `{yt_data['channel']}`"
+                await pro.edit_text(upload_text)
+                response = requests.get(f"https://i.ytimg.com/vi/{yt_data['id']}/hqdefault.jpg")
+                with open(f"{yt_file}.jpg", "wb") as f:
+                    f.write(response.content)
+                await message.reply_video(
+                    f"{yt_file}.mp4",
+                    caption=f"**🎧 𝖳𝗂𝗍𝗅𝖾:** {yt_data['title']} \n\n**👀 𝖵𝗂𝖾𝗐𝗌:** `{yt_data['view_count']}` \n**⌛ 𝖣𝗎𝗋𝖺𝗍𝗂𝗈𝗇:** `{secs_to_mins(int(yt_data['duration']))}`",
+                    duration=int(yt_data["duration"]),
+                    thumb=f"{yt_file}.jpg",
+                    progress=progress,
+                    progress_args=(
+                        pro,
+                        time.time(),
+                        upload_text,
+                    ),
+                )
+                await pro.delete()
             except Exception as e:
-                await dll.delete()
-                await message.reply_text(f"Error: {str(e)}")
+                return await pro.edit_text(f"**🍀 Video not Downloaded:** `{e}`")
+            try:
+                os.remove(f"{yt_file}.jpg")
+                os.remove(f"{yt_file}.mp4")
+            except:
+                pass
         else:
             await message.reply_text("Link format not recognized.")
 
